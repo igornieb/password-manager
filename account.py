@@ -7,9 +7,15 @@ class Account:
     login_salt = "salt for logging in"
 
     def __init__(self, username, password):
+        self.authenticated = False
         self.username = username
         self.salt = ""
         self.hashed_password = hashlib.sha256((password + self.login_salt).encode()).hexdigest()
+
+    def is_authenticated(self):
+        if self.authenticated:
+            return True
+        return False
 
     def login(self):
         db_conn = sqlite3.connect('password-manager.sqlite')
@@ -18,6 +24,7 @@ class Account:
         db_conn.close()
         if db_pass == self.hashed_password:
             self.salt = c.execute(f"SELECT 'salt' FROM `accounts` WHERE username='{self.username}'")
+            self.authenticated = True
             return True
         else:
             return False
