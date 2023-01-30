@@ -5,7 +5,8 @@ import tkinter
 import customtkinter
 
 # TODO finish tkinker gui,
-#  scroling,
+#  resize buttons
+#  scrolling,
 #  add new entry,
 #  delete entry,
 #  finish edit entry,
@@ -21,11 +22,14 @@ customtkinter.set_default_color_theme("dark-blue")  # Themes: "blue" (standard),
 class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
-        self.db_user = None
-        self.loginPrompt()
+        # self.db_user = None
+        # self.loginPrompt()
+        self.db_user = Account("igornieb", "password")
+        self.db_user.login()
+        self.mainWindow()
 
     def loginPrompt(self):
-        #GUI part of Login/Register window
+        # GUI part of Login/Register window
         # TODO hide password input but not value
         self.loginWindow = customtkinter.CTkToplevel()
         self.loginWindow.title("Login/Register")
@@ -47,7 +51,7 @@ class App(customtkinter.CTk):
         self.registerButton.grid(row=5, column=1)
 
     def login_action(self):
-        #logic behind logging in Login/Register window
+        # logic behind logging in Login/Register window
         self.db_user = Account(str(self.loginEntry.get()), str(self.passwordEntry.get()))
         if self.db_user.login():
             self.loginWindow.destroy()
@@ -102,21 +106,21 @@ class App(customtkinter.CTk):
             self.main.title("password-manager")
             self.main.geometry(f"{1000}x{500}")
 
-            self.columnconfigure(0)
-            # TODO search logic, resize buttons, cancel search
-            self.search_frame = customtkinter.CTkFrame(master=self.main, corner_radius=10)
-            self.search_frame.grid(row=0, column=0, padx=10, pady=10)
-            self.search_entry = customtkinter.CTkEntry(master=self.search_frame)
-            self.search_entry.grid(row=0, column=0, padx=20)
-            self.search_cancel_button = customtkinter.CTkButton(master=self.search_frame, text="cancel",
-                                                                command=self.cancel_search)
-            self.search_cancel_button.grid(row=0, column=1)
-            self.search_button = customtkinter.CTkButton(master=self.search_frame, text="search", command=self.search)
-            self.search_button.grid(row=0, column=2, padx=10, pady=10)
-            self.logout_frame = customtkinter.CTkFrame(master=self.main, corner_radius=10)
-            self.logout_frame.grid(row=0, column=1, padx=10, pady=10)
-            self.logout_btn = customtkinter.CTkButton(master=self.logout_frame, text="logout", command=self.logout)
-            self.logout_btn.grid(row=0, column=0, padx=10, pady=10)
+            search_frame = customtkinter.CTkFrame(master=self.main, corner_radius=10)
+            search_frame.grid(row=0, column=0, padx=10, pady=10)
+            search_entry = customtkinter.CTkEntry(master=search_frame)
+            search_entry.grid(row=0, column=0, padx=20)
+            search_cancel_button = customtkinter.CTkButton(master=search_frame, text="cancel",
+                                                           command=self.cancel_search)
+            search_cancel_button.grid(row=0, column=1)
+            search_button = customtkinter.CTkButton(master=search_frame, text="search", command=self.search)
+            search_button.grid(row=0, column=2, padx=10, pady=10)
+            logout_frame = customtkinter.CTkFrame(master=self.main, corner_radius=10)
+            logout_frame.grid(row=0, column=1, padx=10, pady=10)
+            settings_button = customtkinter.CTkButton(master=logout_frame, text="Settings", command=self.accountWindow)
+            settings_button.grid(row=0, column=0)
+            logout_btn = customtkinter.CTkButton(master=logout_frame, text="logout", command=self.logout)
+            logout_btn.grid(row=0, column=1, padx=10, pady=10)
             # 2nd row
 
             self.frame_entries = customtkinter.CTkFrame(master=self.main, corner_radius=10)
@@ -128,11 +132,56 @@ class App(customtkinter.CTk):
         else:
             self.loginPrompt()
 
+    def accountWindow(self):
+        # GUI of user settings menu
+        settings = customtkinter.CTkToplevel()
+        settings.title("Account settings")
+        settings_label = customtkinter.CTkLabel(master=settings, text=f"Hello {self.db_user.username}")
+        settings_label.grid(row=0, column=0, padx=10, pady=10)
+        frame1 = customtkinter.CTkFrame(master=settings, corner_radius=10)
+        frame1.grid(row=1, column=0, padx=10, pady=10)
+        settings_frame = customtkinter.CTkFrame(master=frame1, corner_radius=10)
+        settings_frame.grid(row=1, column=0, padx=10, pady=10)
+
+        change_password_label = customtkinter.CTkLabel(master=frame1, text="Change password")
+        change_password_label.grid(row=0, column=0, padx=10, pady=10)
+
+        old_password_label = customtkinter.CTkLabel(master=settings_frame, text="Old password")
+        old_password_label.grid(row=1, column=0, padx=10, pady=10)
+        new_password_label = customtkinter.CTkLabel(master=settings_frame, text="New password")
+        new_password_label.grid(row=2, column=0, padx=10, pady=10)
+        new_password1_label = customtkinter.CTkLabel(master=settings_frame, text="Repeat new password")
+        new_password1_label.grid(row=3, column=0, padx=10, pady=10)
+
+        old_password_entry = customtkinter.CTkEntry(master=settings_frame)
+        old_password_entry.grid(row=1, column=1, padx=10, pady=10)
+        new_password_entry = customtkinter.CTkEntry(master=settings_frame)
+        new_password_entry.grid(row=2, column=1, padx=10, pady=10)
+        new_password1_entry = customtkinter.CTkEntry(master=settings_frame)
+        new_password1_entry.grid(row=3, column=1, padx=10, pady=10)
+
+        error_label = customtkinter.CTkLabel(master=settings_frame, text="", text_color="red")
+        error_label.grid(row=4, column=1, padx=10, pady=10)
+
+        change_password_button = customtkinter.CTkButton(master=frame1, text="Change password")
+        change_password_button.grid(row=2, column=0, padx=10, pady=10)
+
+        #TODO link to functions with lambda:
+        export_frame = customtkinter.CTkFrame(master=settings, corner_radius=10)
+        export_frame.grid(row=2, column=0, padx=10, pady=10, sticky="NESW")
+        export_btn = customtkinter.CTkButton(master=export_frame, text="Export all data to file")
+        export_btn.grid(row=0, column=0, padx=10, pady=10, sticky="SW")
+        delete_account_btn = customtkinter.CTkButton(master=export_frame, text="Delete account")
+        delete_account_btn.grid(row=0, column=1, padx=10, pady=10, sticky="SW")
+
     def copy_to_clipboard(self, value: str):
-        #copy given value to clipboard
+        # copy given value to clipboard
         self.main.clipboard_clear()
         self.main.clipboard_append(value)
         self.main.update()
+
+    def export_entries_to_file(self):
+        pass
 
     def cancel_search(self):
         # returns to default view of mainWindow method
@@ -171,7 +220,8 @@ class App(customtkinter.CTk):
         self.frame_website_entry = customtkinter.CTkEntry(master=self.frame_entry_info)
         self.frame_website_entry.grid(row=0, column=1, padx=10, pady=10)
         self.frame_website_copy = customtkinter.CTkButton(master=self.frame_entry_info, text="copy",
-                                                          command=lambda: self.copy_to_clipboard(self.frame_website_entry.get()))
+                                                          command=lambda: self.copy_to_clipboard(
+                                                              self.frame_website_entry.get()))
         self.frame_website_copy.grid(row=0, column=2, padx=10, pady=10)
 
         self.frame_username_label = customtkinter.CTkLabel(master=self.frame_entry_info, text="Username:")
@@ -179,7 +229,8 @@ class App(customtkinter.CTk):
         self.frame_username_entry = customtkinter.CTkEntry(master=self.frame_entry_info)
         self.frame_username_entry.grid(row=1, column=1, padx=10, pady=10)
         self.frame_username_copy = customtkinter.CTkButton(master=self.frame_entry_info, text="copy",
-                                                           command=lambda: self.copy_to_clipboard(self.frame_username_entry.get()))
+                                                           command=lambda: self.copy_to_clipboard(
+                                                               self.frame_username_entry.get()))
         self.frame_username_copy.grid(row=1, column=2, padx=10, pady=10)
 
         self.frame_password_label = customtkinter.CTkLabel(master=self.frame_entry_info, text="Password:")
@@ -187,11 +238,11 @@ class App(customtkinter.CTk):
         self.frame_password_entry = customtkinter.CTkEntry(master=self.frame_entry_info)
         self.frame_password_entry.grid(row=2, column=1, padx=10, pady=10)
         self.frame_password_copy = customtkinter.CTkButton(master=self.frame_entry_info, text="copy",
-                                                           command=lambda: self.copy_to_clipboard(self.frame_website_password.get()))
+                                                           command=lambda: self.copy_to_clipboard(
+                                                               self.frame_website_password.get()))
         self.frame_password_copy.grid(row=2, column=2, padx=10, pady=10)
         self.frame_save = customtkinter.CTkButton(master=self.frame_entry_info, text="Save")
         self.frame_save.grid(row=3, column=1, padx=10, pady=10)
-
 
     def search(self):
         # search database and show results in mainWindow
@@ -215,9 +266,9 @@ def search_db(user: Account, query: str):
         db_conn = sqlite3.connect('password-manager.sqlite')
         c = db_conn.cursor()
         db_query = c.execute(
-            f'''SELECT username, website, password FROM entries WHERE owner="{user.username}" AND username LIKE "%{query}%" OR website like "%{query}%"''')
+            f'''SELECT id, username, website, password FROM entries WHERE owner="{user.username}" AND username LIKE "%{query}%" OR website like "%{query}%"''')
         for res in db_query:
-            results.append(Entry(user, res[0], res[1], res[2]))
+            results.append(Entry(user, res[0], res[1], res[2], res[3]))
         db_conn.close()
     return results
 
@@ -228,9 +279,9 @@ def all_entries(user: Account):
         db_conn = sqlite3.connect('password-manager.sqlite')
         c = db_conn.cursor()
         db_query = c.execute(
-            f'''SELECT username, website, password FROM entries WHERE owner="{user.username}"''')
+            f'''SELECT id, username, website, password FROM entries WHERE owner="{user.username}"''')
         for res in db_query:
-            results.append(Entry(user, res[0], res[1], res[2]))
+            results.append(Entry(user, res[0], res[1], res[2], res[3]))
         db_conn.close()
     return results
 
