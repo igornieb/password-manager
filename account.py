@@ -50,6 +50,18 @@ class Account:
             return False
 
     # TODO change_password, delete_account
+
+    def delete(self):
+        if self.is_authenticated():
+            try:
+                db_conn = sqlite3.connect('password-manager.sqlite')
+                c = db_conn.cursor()
+                c.execute(f"DELETE FROM `accounts` WHERE username='{self.username}'")
+                db_conn.commit()
+                db_conn.close()
+            except:
+                return "err"
+
     def __str__(self):
         return self.username
 
