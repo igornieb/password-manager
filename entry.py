@@ -26,10 +26,9 @@ class Entry:
 
     def delete(self):
         if self.owner.is_authenticated():
-            hashed_password = self.encrypt()
             db_conn = sqlite3.connect('password-manager.sqlite')
             c = db_conn.cursor()
-            db_query = c.execute(f'''DELETE FROM `entries` WHERE (id="{self.id}", owner="{self.owner.username}", username="{self.username}", website="{self.website}")''')
+            db_query = c.execute(f'''DELETE FROM `entries` WHERE id="{self.id}" AND owner="{self.owner.username}"''')
             db_conn.commit()
             db_conn.close()
             return True
