@@ -19,17 +19,20 @@ class Account:
         return False
 
     def login(self):
-        db_conn = sqlite3.connect('password-manager.sqlite')
-        c = db_conn.cursor()
-        db_password=c.execute(f"SELECT password FROM `accounts` WHERE username='{self.username}'")
-        db_password=db_password.fetchone()[0]
-        if db_password == self.hashed_password:
-            self.salt = c.execute(f"SELECT salt FROM `accounts` WHERE username='{self.username}'").fetchone()[0]
-            self.authenticated = True
-            db_conn.close()
-            return True
-        else:
-            db_conn.close()
+        try:
+            db_conn = sqlite3.connect('password-manager.sqlite')
+            c = db_conn.cursor()
+            db_password = c.execute(f"SELECT password FROM `accounts` WHERE username='{self.username}'")
+            db_password = db_password.fetchone()[0]
+            if db_password == self.hashed_password:
+                self.salt = c.execute(f"SELECT salt FROM `accounts` WHERE username='{self.username}'").fetchone()[0]
+                self.authenticated = True
+                db_conn.close()
+                return True
+            else:
+                db_conn.close()
+                return False
+        except:
             return False
 
     def register(self):
@@ -38,7 +41,8 @@ class Account:
             c = db_conn.cursor()
             alphabet = string.ascii_letters + string.digits
             self.salt = ''.join(secrets.choice(alphabet) for i in range(100))
-            c.execute(f'''INSERT INTO `accounts`('username','salt','password') VALUES ("{self.username}", "{self.salt}", "{self.hashed_password}")''')
+            c.execute(
+                f'''INSERT INTO `accounts`('username','salt','password') VALUES ("{self.username}", "{self.salt}", "{self.hashed_password}")''')
             db_conn.commit()
             db_conn.close()
             return True
