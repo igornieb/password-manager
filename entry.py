@@ -6,7 +6,8 @@ from base64 import b64encode, b64decode
 
 
 class Entry:
-    def __init__(self, user: Account, username, website, password):
+    def __init__(self, index, user: Account, username, website, password):
+        self.id = index
         self.owner = user
         self.username = username
         self.website = website
@@ -20,6 +21,32 @@ class Entry:
             db_query = c.execute(f'''INSERT INTO `entries` ('owner','username','website','password') VALUES ("{self.owner.username}", "{self.username}", "{self.website}", "{hashed_password}")''')
             db_conn.commit()
             db_conn.close()
+            return True
+        return False
+
+    def delete(self):
+        if self.owner.is_authenticated():
+            hashed_password = self.encrypt()
+            db_conn = sqlite3.connect('password-manager.sqlite')
+            c = db_conn.cursor()
+            db_query = c.execute(f'''DELETE FROM `entries` WHERE (id="{self.id}", owner="{self.owner.username}", username="{self.username}", website="{self.website}")''')
+            db_conn.commit()
+            db_conn.close()
+            return True
+        return False
+
+    def update(self, new_username, new_website, new_password):
+        if self.owner.is_authenticated():
+            self.password = new_password
+            hashed_password = self.encrypt()
+            db_conn = sqlite3.connect('password-manager.sqlite')
+            c = db_conn.cursor()
+            db_query = c.execute(f'''UPDATE entries SET username = "{new_username}" , website = "{new_website}", password="{hashed_password}" Where id="{self.id}" AND owner="{self.owner}"''')
+            db_conn.commit()
+            db_conn.close()
+            self.username = new_username
+            self.website = new_website
+            self.password = hashed_password
             return True
         return False
 
