@@ -134,11 +134,11 @@ class App(customtkinter.CTk):
 
     def accountWindow(self):
         # GUI of user settings menu
-        settings = customtkinter.CTkToplevel()
-        settings.title("Account settings")
-        settings_label = customtkinter.CTkLabel(master=settings, text=f"Hello {self.db_user.username}")
+        self.settings = customtkinter.CTkToplevel()
+        self.settings.title("Account settings")
+        settings_label = customtkinter.CTkLabel(master=self.settings, text=f"Hello {self.db_user.username}")
         settings_label.grid(row=0, column=0, padx=10, pady=10)
-        frame1 = customtkinter.CTkFrame(master=settings, corner_radius=10)
+        frame1 = customtkinter.CTkFrame(master=self.settings, corner_radius=10)
         frame1.grid(row=1, column=0, padx=10, pady=10)
         settings_frame = customtkinter.CTkFrame(master=frame1, corner_radius=10)
         settings_frame.grid(row=1, column=0, padx=10, pady=10)
@@ -166,13 +166,26 @@ class App(customtkinter.CTk):
         change_password_button = customtkinter.CTkButton(master=frame1, text="Change password")
         change_password_button.grid(row=2, column=0, padx=10, pady=10)
 
-        #TODO link to functions with lambda:
-        export_frame = customtkinter.CTkFrame(master=settings, corner_radius=10)
+        export_frame = customtkinter.CTkFrame(master=self.settings, corner_radius=10)
         export_frame.grid(row=2, column=0, padx=10, pady=10, sticky="NESW")
-        export_btn = customtkinter.CTkButton(master=export_frame, text="Export all data to file")
+        export_btn = customtkinter.CTkButton(master=export_frame, text="Export all data to file", command=self.export_entries_to_file)
         export_btn.grid(row=0, column=0, padx=10, pady=10, sticky="SW")
-        delete_account_btn = customtkinter.CTkButton(master=export_frame, text="Delete account")
+        delete_account_btn = customtkinter.CTkButton(master=export_frame, text="Delete account", command=self.confirm_delete)
         delete_account_btn.grid(row=0, column=1, padx=10, pady=10, sticky="SW")
+
+    def confirm_delete(self):
+        alert = customtkinter.CTkToplevel()
+        label = customtkinter.CTkLabel(master=alert, text="Are you sure?")
+        label.grid(row=0, column=0, padx=10, pady=10, sticky="NESW")
+        confirm_btn = customtkinter.CTkButton(master=alert, text="Yes", command=lambda: delete_account())
+        confirm_btn.grid(row=1, column=0, padx=10, pady=10, sticky="NESW")
+        cancel_btn = customtkinter.CTkButton(master=alert, text="No", command=lambda: alert.destroy())
+        cancel_btn.grid(row=1, column=1, padx=10, pady=10, sticky="NESW")
+        def delete_account():
+            #self.db_user.delete()
+            self.settings.destroy()
+            alert.destroy()
+            self.logout()
 
     def copy_to_clipboard(self, value: str):
         # copy given value to clipboard
@@ -181,6 +194,8 @@ class App(customtkinter.CTk):
         self.main.update()
 
     def export_entries_to_file(self):
+        # TODO
+        # show dialog for selecting location, save to that location
         pass
 
     def cancel_search(self):
