@@ -10,15 +10,12 @@ from utilis import pswd_gen, search_db, all_entries
 # TODO finish tkinker gui,
 #  resize buttons
 #  scrolling,
-#  delete entry,
-#  finish edit entry,
-#  account settings
 
 # TODO store salt and pepper (?)
 
 # TODO db cascade
 # TODO sql injection
-
+#TODO find Entry class authentication bug
 
 customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("dark-blue")  # Themes: "blue" (standard), "green", "dark-blue"
@@ -111,29 +108,33 @@ class App(customtkinter.CTk):
         if self.db_user.is_authenticated:
             self.main = customtkinter.CTkToplevel()
             self.main.title("password-manager")
-            self.main.geometry(f"{1000}x{500}")
+            self.main.geometry(f"{1150}x{500}")
 
             self.search_frame = customtkinter.CTkFrame(master=self.main, corner_radius=10)
             self.search_frame.grid(row=0, column=0, padx=(10, 0), pady=10)
             self.search_entry = customtkinter.CTkEntry(master=self.search_frame)
-            self.search_entry.grid(row=0, column=0, padx=20)
-            search_cancel_button = customtkinter.CTkButton(master=self.search_frame, text="x", width=1,
+            self.search_entry.grid(row=0, column=0, padx=10)
+            search_cancel_image = customtkinter.CTkImage(dark_image=Image.open("assets/cancel_d.png"),
+                                                    light_image=Image.open("assets/cancel.png"))
+            search_cancel_button = customtkinter.CTkButton(master=self.search_frame, text="", image=search_cancel_image, width=1,
                                                            command=self.cancel_search)
             search_cancel_button.grid(row=0, column=1, padx=0)
-            search_button = customtkinter.CTkButton(master=self.search_frame, text="search",
+            search_image = customtkinter.CTkImage(dark_image=Image.open("assets/search_d.png"),
+                                                    light_image=Image.open("assets/search.png"))
+            search_button = customtkinter.CTkButton(master=self.search_frame, text="", width=4, image=search_image,
                                                     command=lambda: self.search(self.search_entry.get()))
             search_button.grid(row=0, column=2, padx=10, pady=10)
-            logout_frame = customtkinter.CTkFrame(master=self.main, corner_radius=10)
-            logout_frame.grid(row=0, column=1, padx=10, pady=10, sticky="NESW")
-            # TODO photoshop icon
-            add_new_btn = customtkinter.CTkButton(master=logout_frame, text="+", width=1, command=self.add_entry_frame)
+            settings_frame = customtkinter.CTkFrame(master=self.main, corner_radius=10)
+            settings_frame.grid(row=0, column=2, padx=10, pady=10, sticky="NESW")
+            add_image = customtkinter.CTkImage(dark_image=Image.open("assets/add_d.png"),
+                                                    light_image=Image.open("assets/add.png"))
+            add_new_btn = customtkinter.CTkButton(master=settings_frame, image=add_image, text="", width=1, command=self.add_entry_frame)
             add_new_btn.grid(row=0, column=0, padx=10, pady=10, sticky="NESW")
-            settings_image = customtkinter.CTkImage(
-                dark_image=Image.open("assets/settings.png"))  # ,light_image=Image.open("assets/settings_l.png.png"))
-            settings_button = customtkinter.CTkButton(master=logout_frame, image=settings_image, text="", width=1,
+            settings_image = customtkinter.CTkImage(dark_image=Image.open("assets/settings_d.png"), light_image=Image.open("assets/settings.png"))
+            settings_button = customtkinter.CTkButton(master=settings_frame, image=settings_image, text="", width=1,
                                                       command=self.accountWindow)
             settings_button.grid(row=0, column=1)
-            logout_btn = customtkinter.CTkButton(master=logout_frame, text="logout", command=self.logout)
+            logout_btn = customtkinter.CTkButton(master=settings_frame, text="logout", command=self.logout)
             logout_btn.grid(row=0, column=2, padx=10, pady=10)
             # 2nd row
 
@@ -180,7 +181,6 @@ class App(customtkinter.CTk):
                                                                                                 sticky="NESW")
 
     def add_entry_frame(self):
-        # TODO add pasword generator
         for widget in self.frame_entry_info.winfo_children():
             widget.destroy()
 
@@ -286,7 +286,7 @@ class App(customtkinter.CTk):
     def cancel_search(self):
         # returns to default view of mainWindow method
         self.search_entry = customtkinter.CTkEntry(master=self.search_frame)
-        self.search_entry.grid(row=0, column=0, padx=20)
+        self.search_entry.grid(row=0, column=0, padx=10)
         self.show_entries(self.all_entries())
 
     def show_entries(self, entries):
@@ -298,21 +298,22 @@ class App(customtkinter.CTk):
         i = 0
         if len(entries) == 0:
             self.not_found_label = customtkinter.CTkLabel(master=self.frame_entries, text="Nothing was found")
-            self.not_found_label.grid(row=0, column=0, padx=10, pady=10, sticky="NESW")
+            self.not_found_label.grid(row=0, column=0, padx=10, pady=10, sticky="nesw")
+
         for entry in entries:
             frame_entry = customtkinter.CTkFrame(master=self.frame_entries, corner_radius=10)
-            frame_entry.grid(row=i, column=0, padx=10, pady=10, sticky="NESW")
+            frame_entry.grid(row=i, column=0, padx=10, pady=10, sticky="news")
             entry_webiste_label = customtkinter.CTkLabel(master=frame_entry, text=f"{entry.website}")
-            entry_webiste_label.grid(row=0, column=0, padx=10, sticky="NESW")
+            entry_webiste_label.grid(row=0, column=0, padx=10, sticky="nesw")
             entry_username_label = customtkinter.CTkLabel(master=frame_entry, text=f"{entry.username}")
             entry_username_label.grid(row=1, column=0, padx=(20, 10), sticky="EW")
-            entry_edit_button = customtkinter.CTkButton(master=frame_entry, text="Edit",
-                                                        command=lambda entry=entry: self.show_entry_info(entry))
+            entry_edit_image = customtkinter.CTkImage(dark_image=Image.open("assets/edit_d.png"),
+                                                    light_image=Image.open("assets/edit.png"))
+            entry_edit_button = customtkinter.CTkButton(master=frame_entry, text="", image=entry_edit_image,width=1, command=lambda entry=entry: self.show_entry_info(entry))
             entry_edit_button.grid(row=1, column=2, padx=10, pady=10, sticky="EW")
             i += 1
 
     def show_entry_info(self, entry: Entry):
-        # TODO icon for copy button
         # gui part of showing detailed entry info
         for widget in self.frame_entry_info.winfo_children():
             widget.destroy()
@@ -321,7 +322,9 @@ class App(customtkinter.CTk):
         self.frame_website_entry = customtkinter.CTkEntry(master=self.frame_entry_info)
         self.frame_website_entry.grid(row=0, column=1, padx=10, pady=10)
         self.frame_website_entry.insert(0, entry.website)
-        self.frame_website_copy = customtkinter.CTkButton(master=self.frame_entry_info, text="copy",
+        copy_image = customtkinter.CTkImage(dark_image=Image.open("assets/copy_d.png"),
+                                                  light_image=Image.open("assets/copy.png"))
+        self.frame_website_copy = customtkinter.CTkButton(master=self.frame_entry_info, text="", image=copy_image, width=1,
                                                           command=lambda: self.copy_to_clipboard(
                                                               self.frame_website_entry.get()))
         self.frame_website_copy.grid(row=0, column=2, padx=10, pady=10)
@@ -331,7 +334,7 @@ class App(customtkinter.CTk):
         self.frame_username_entry = customtkinter.CTkEntry(master=self.frame_entry_info)
         self.frame_username_entry.grid(row=1, column=1, padx=10, pady=10)
         self.frame_username_entry.insert(0, entry.username)
-        self.frame_username_copy = customtkinter.CTkButton(master=self.frame_entry_info, text="copy",
+        self.frame_username_copy = customtkinter.CTkButton(master=self.frame_entry_info, text="", image=copy_image, width=1,
                                                            command=lambda: self.copy_to_clipboard(
                                                                self.frame_username_entry.get()))
         self.frame_username_copy.grid(row=1, column=2, padx=10, pady=10)
@@ -342,14 +345,17 @@ class App(customtkinter.CTk):
         self.frame_password_entry.grid(row=2, column=1, padx=10, pady=10)
         self.frame_password_entry.insert(0, entry.decrypt())
 
-        self.frame_password_copy = customtkinter.CTkButton(master=self.frame_entry_info, text="copy",
+        self.frame_password_copy = customtkinter.CTkButton(master=self.frame_entry_info, text="", image=copy_image, width=1,
                                                            command=lambda: self.copy_to_clipboard(
                                                                self.frame_password_entry.get()))
         self.frame_password_copy.grid(row=2, column=2, padx=10, pady=10)
         self.frame_save = customtkinter.CTkButton(master=self.frame_entry_info, text="Save",
                                                   command=lambda: self.update_entry(entry))
         self.frame_save.grid(row=3, column=1, padx=10, pady=10, sticky="NESW")
-        self.frame_delete = customtkinter.CTkButton(master=self.frame_entry_info, text="Delete",
+        delete_image = customtkinter.CTkImage(dark_image=Image.open("assets/delete_d.png"),
+                                                  light_image=Image.open("assets/delete.png"))
+
+        self.frame_delete = customtkinter.CTkButton(master=self.frame_entry_info, text="", image=delete_image, width=1,
                                                     command=lambda: self.delete_entry(entry))
         self.frame_delete.grid(row=3, column=2, padx=10, pady=10, sticky="NESW")
 
