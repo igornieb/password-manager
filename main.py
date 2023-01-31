@@ -4,6 +4,8 @@ from PIL import Image
 from account import Account
 from entry import Entry
 import customtkinter
+import tkinter
+from utilis import pswd_gen, search_db, all_entries
 
 # TODO finish tkinker gui,
 #  resize buttons
@@ -27,6 +29,7 @@ class App(customtkinter.CTk):
         super().__init__()
         # self.db_user = None
         # self.loginPrompt()
+
         self.db_user = Account("igornieb", "password")
         self.db_user.login()
         self.mainWindow()
@@ -143,8 +146,38 @@ class App(customtkinter.CTk):
 
             self.frame_pswd_generator = customtkinter.CTkFrame(master=self.main, corner_radius=10)
             self.frame_pswd_generator.grid(row=1, column=2, padx=10, pady=10, sticky="NESW")
+            self.add_password_generator_content()
         else:
             self.loginPrompt()
+
+    def add_password_generator_content(self):
+        label = customtkinter.CTkLabel(master=self.frame_pswd_generator, text="Password generator").grid(row=0,
+                                                                                                         column=0,
+                                                                                                         padx=10,
+                                                                                                         pady=10,
+                                                                                                         sticky="NESW")
+        frame = customtkinter.CTkFrame(master=self.frame_pswd_generator)
+        frame.grid(row=1, column=0, sticky="NESW")
+        slider_label = customtkinter.CTkLabel(master=frame, text="Password length").grid(row=0, column=0, padx="10px",
+                                                                                         pady=10, sticky="NESW")
+
+        password = customtkinter.CTkEntry(master=frame)
+        password.grid(row=1, column=1, padx=10, pady=10, sticky="NESW")
+
+        def get_password(length: int):
+            password = customtkinter.CTkEntry(master=frame)
+            password.grid(row=1, column=1, padx=10, pady=10, sticky="NESW")
+            a = pswd_gen(length)
+            password.insert(0, a)
+
+        slider_val = tkinter.IntVar()
+        get_password(slider_val.get())
+        slider = customtkinter.CTkSlider(master=frame, from_=1, to=25, variable=slider_val, height=20,
+                                         command=lambda x: get_password(slider_val.get()))
+        slider.grid(row=0, column=1, padx=0, pady=0, sticky="NESW")
+        slider_value_label = customtkinter.CTkLabel(master=frame, textvariable=slider_val).grid(row=1, column=0,
+                                                                                                padx=10, pady=10,
+                                                                                                sticky="NESW")
 
     def add_entry_frame(self):
         # TODO add pasword generator
@@ -171,9 +204,11 @@ class App(customtkinter.CTk):
         self.frame_save.grid(row=4, column=0, padx=10, pady=10, sticky="NESW")
 
     def add_new_entry(self):
-        #TODO test (sm is wrong...)
-        if len(self.frame_username_entry.get())>2 and len(self.frame_website_entry.get())>2 and len(self.frame_password_entry.get())>2:
-            e = Entry(-1, self.db_user, self.frame_username_entry.get(), self.frame_website_entry.get(), self.frame_password_entry.get())
+        # TODO test (sm is wrong...)
+        if len(self.frame_username_entry.get()) > 2 and len(self.frame_website_entry.get()) > 2 and len(
+                self.frame_password_entry.get()) > 2:
+            e = Entry(-1, self.db_user, self.frame_username_entry.get(), self.frame_website_entry.get(),
+                      self.frame_password_entry.get())
             e.add()
             self.show_entries(all_entries(self.db_user))
             for widget in self.frame_entry_info.winfo_children():
@@ -270,13 +305,13 @@ class App(customtkinter.CTk):
             entry_webiste_label = customtkinter.CTkLabel(master=frame_entry, text=f"{entry.website}")
             entry_webiste_label.grid(row=0, column=0, padx=10, sticky="NESW")
             entry_username_label = customtkinter.CTkLabel(master=frame_entry, text=f"{entry.username}")
-            entry_username_label.grid(row=1, column=1, padx=10, sticky="NESW")
+            entry_username_label.grid(row=1, column=0, padx=(20, 10), sticky="EW")
             entry_edit_button = customtkinter.CTkButton(master=frame_entry, text="Edit",
-                                                             command= lambda entry=entry: self.show_entry_info(entry))
-            entry_edit_button.grid(row=1, column=2, padx=10, pady=10, sticky="W")
+                                                        command=lambda entry=entry: self.show_entry_info(entry))
+            entry_edit_button.grid(row=1, column=2, padx=10, pady=10, sticky="EW")
             i += 1
 
-    def show_entry_info(self, entry:Entry):
+    def show_entry_info(self, entry: Entry):
         # TODO icon for copy button
         # gui part of showing detailed entry info
         for widget in self.frame_entry_info.winfo_children():
@@ -285,7 +320,7 @@ class App(customtkinter.CTk):
         self.frame_website_label.grid(row=0, column=0, padx=10, pady=10)
         self.frame_website_entry = customtkinter.CTkEntry(master=self.frame_entry_info)
         self.frame_website_entry.grid(row=0, column=1, padx=10, pady=10)
-        self.frame_website_entry.insert(0,entry.website)
+        self.frame_website_entry.insert(0, entry.website)
         self.frame_website_copy = customtkinter.CTkButton(master=self.frame_entry_info, text="copy",
                                                           command=lambda: self.copy_to_clipboard(
                                                               self.frame_website_entry.get()))
@@ -311,13 +346,14 @@ class App(customtkinter.CTk):
                                                            command=lambda: self.copy_to_clipboard(
                                                                self.frame_password_entry.get()))
         self.frame_password_copy.grid(row=2, column=2, padx=10, pady=10)
-        self.frame_save = customtkinter.CTkButton(master=self.frame_entry_info, text="Save", command=lambda:self.update_entry(entry))
+        self.frame_save = customtkinter.CTkButton(master=self.frame_entry_info, text="Save",
+                                                  command=lambda: self.update_entry(entry))
         self.frame_save.grid(row=3, column=1, padx=10, pady=10, sticky="NESW")
         self.frame_delete = customtkinter.CTkButton(master=self.frame_entry_info, text="Delete",
-                                                  command=lambda: self.delete_entry(entry))
+                                                    command=lambda: self.delete_entry(entry))
         self.frame_delete.grid(row=3, column=2, padx=10, pady=10, sticky="NESW")
 
-    def delete_entry(self, entry:Entry):
+    def delete_entry(self, entry: Entry):
         alert = customtkinter.CTkToplevel()
         label = customtkinter.CTkLabel(master=alert, text="Are you sure?")
         label.grid(row=0, column=0, padx=10, pady=10, sticky="NESW")
@@ -333,11 +369,14 @@ class App(customtkinter.CTk):
             for widget in self.frame_entry_info.winfo_children():
                 widget.destroy()
 
-    def update_entry(self,entry:Entry):
-        if len(self.frame_username_entry.get())>2 and len(self.frame_website_entry.get())>2 and len(self.frame_password_entry.get())>2:
-            if entry.update(self.frame_username_entry.get(), self.frame_website_entry.get(), self.frame_password_entry.get()):
+    def update_entry(self, entry: Entry):
+        if len(self.frame_username_entry.get()) > 2 and len(self.frame_website_entry.get()) > 2 and len(
+                self.frame_password_entry.get()) > 2:
+            if entry.update(self.frame_username_entry.get(), self.frame_website_entry.get(),
+                            self.frame_password_entry.get()):
                 self.show_entries(all_entries(self.db_user))
-                frame_message_label = customtkinter.CTkLabel(master=self.frame_entry_info, text="Update succesful", text_color="green")
+                frame_message_label = customtkinter.CTkLabel(master=self.frame_entry_info, text="Update succesful",
+                                                             text_color="green")
                 frame_message_label.grid(row=4, column=1, padx=10, pady=10, sticky="NESW")
             else:
                 frame_message_label = customtkinter.CTkLabel(master=self.frame_entry_info, text="error",
@@ -361,32 +400,6 @@ class App(customtkinter.CTk):
         self.db_user = None
         self.main.destroy()
         self.loginPrompt()
-
-
-def search_db(user: Account, query: str):
-    results = []
-    if user.is_authenticated():
-        db_conn = sqlite3.connect('password-manager.sqlite')
-        c = db_conn.cursor()
-        db_query = c.execute(
-            f'''SELECT id, username, website, password FROM entries WHERE owner="{user.username}" AND username LIKE "%{query}%" OR website like "%{query}%"''')
-        for res in db_query:
-            results.append(Entry(user, res[0], res[1], res[2], res[3]))
-        db_conn.close()
-    return results
-
-
-def all_entries(user: Account):
-    results = []
-    if user.is_authenticated():
-        db_conn = sqlite3.connect('password-manager.sqlite')
-        c = db_conn.cursor()
-        db_query = c.execute(
-            f'''SELECT id, username, website, password FROM entries WHERE owner="{user.username}"''')
-        for res in db_query:
-            results.append(Entry(res[0], user, res[1], res[2], res[3]))
-        db_conn.close()
-    return results
 
 
 def test():
