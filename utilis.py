@@ -23,7 +23,7 @@ def search_db(user: Account, query: str):
         db_query = c.execute(
             f'''SELECT id, username, website, password FROM entries WHERE owner="{user.username}" AND username LIKE "%{query}%" OR website like "%{query}%"''')
         for res in db_query:
-            results.append(Entry(user, res[0], res[1], res[2], res[3]))
+            results.append(Entry(res[0], user, res[1], res[2], res[3]))
         db_conn.close()
     return results
 
