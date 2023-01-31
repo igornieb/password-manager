@@ -1,6 +1,6 @@
 import sqlite3
 from tkinter import Image
-from PIL import Image
+from PIL import Image, ImageTk
 from account import Account
 from entry import Entry
 import customtkinter
@@ -15,7 +15,6 @@ from utilis import pswd_gen, search_db, all_entries
 
 # TODO db cascade
 # TODO sql injection
-#TODO find Entry class authentication bug
 
 customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("dark-blue")  # Themes: "blue" (standard), "green", "dark-blue"
@@ -107,23 +106,25 @@ class App(customtkinter.CTk):
         # main gui window of App, should only be shown if db_user is authenticated
         if self.db_user.is_authenticated:
             self.main = customtkinter.CTkToplevel()
+            self.icon_file = customtkinter.CTkImage(dark_image=Image.open("assets/icon_d.png"),
+                                                    light_image=Image.open("assets/icon.png"))
             self.main.title("password-manager")
             self.main.geometry(f"{1150}x{500}")
 
             self.search_frame = customtkinter.CTkFrame(master=self.main, corner_radius=10)
-            self.search_frame.grid(row=0, column=0, padx=(10, 0), pady=10)
+            self.search_frame.grid(row=0, column=0, padx=(10, 0), pady=10, columnspan=2, sticky="WE")
             self.search_entry = customtkinter.CTkEntry(master=self.search_frame)
-            self.search_entry.grid(row=0, column=0, padx=10)
+            self.search_entry.grid(row=0, column=0, padx=10, columnspan=2)
             search_cancel_image = customtkinter.CTkImage(dark_image=Image.open("assets/cancel_d.png"),
                                                     light_image=Image.open("assets/cancel.png"))
             search_cancel_button = customtkinter.CTkButton(master=self.search_frame, text="", image=search_cancel_image, width=1,
                                                            command=self.cancel_search)
-            search_cancel_button.grid(row=0, column=1, padx=0)
+            search_cancel_button.grid(row=0, column=2, padx=0)
             search_image = customtkinter.CTkImage(dark_image=Image.open("assets/search_d.png"),
                                                     light_image=Image.open("assets/search.png"))
             search_button = customtkinter.CTkButton(master=self.search_frame, text="", width=4, image=search_image,
                                                     command=lambda: self.search(self.search_entry.get()))
-            search_button.grid(row=0, column=2, padx=10, pady=10)
+            search_button.grid(row=0, column=3, padx=10, pady=10)
             settings_frame = customtkinter.CTkFrame(master=self.main, corner_radius=10)
             settings_frame.grid(row=0, column=2, padx=10, pady=10, sticky="NESW")
             add_image = customtkinter.CTkImage(dark_image=Image.open("assets/add_d.png"),
@@ -159,27 +160,32 @@ class App(customtkinter.CTk):
                                                                                                          sticky="NESW")
         frame = customtkinter.CTkFrame(master=self.frame_pswd_generator)
         frame.grid(row=1, column=0, sticky="NESW")
+        # frame.columnconfigure(1,weight=1)
+        # frame.rowconfigure(0, weight=1)
         slider_label = customtkinter.CTkLabel(master=frame, text="Password length").grid(row=0, column=0, padx="10px",
                                                                                          pady=10, sticky="NESW")
 
-        password = customtkinter.CTkEntry(master=frame)
-        password.grid(row=1, column=1, padx=10, pady=10, sticky="NESW")
+        self.gen_password = customtkinter.CTkEntry(master=frame)
+        self.gen_password.grid(row=1, column=1, padx=10, pady=10, sticky="W")
 
         def get_password(length: int):
-            password = customtkinter.CTkEntry(master=frame)
-            password.grid(row=1, column=1, padx=10, pady=10, sticky="NESW")
+            self.gen_password = customtkinter.CTkEntry(master=frame)
+            self.gen_password.grid(row=1, column=1, padx=10, pady=10, sticky="NESW")
             a = pswd_gen(length)
-            password.insert(0, a)
+            self.gen_password.insert(0, a)
 
         slider_val = tkinter.IntVar()
         get_password(slider_val.get())
-        slider = customtkinter.CTkSlider(master=frame, from_=1, to=25, variable=slider_val, height=20,
+        slider = customtkinter.CTkSlider(master=frame, from_=1, to=25, variable=slider_val,
                                          command=lambda x: get_password(slider_val.get()))
-        slider.grid(row=0, column=1, padx=0, pady=0, sticky="NESW")
+        slider.grid(row=0, column=1, padx=0, pady=0, sticky="WE", columnspan=2)
         slider_value_label = customtkinter.CTkLabel(master=frame, textvariable=slider_val).grid(row=1, column=0,
                                                                                                 padx=10, pady=10,
-                                                                                                sticky="NESW")
-
+                                                                                               sticky="NESW")
+        copy_image = customtkinter.CTkImage(dark_image=Image.open("assets/copy_d.png"),
+                                                  light_image=Image.open("assets/copy.png"))
+        copy_button = customtkinter.CTkButton(master=frame, text="", image=copy_image, width=1, command=lambda: self.copy_to_clipboard(self.gen_password.get()))
+        copy_button.grid(row=1,column=2)
     def add_entry_frame(self):
         for widget in self.frame_entry_info.winfo_children():
             widget.destroy()
@@ -187,7 +193,7 @@ class App(customtkinter.CTk):
         self.frame_entry_info = customtkinter.CTkFrame(master=self.main, corner_radius=10)
         self.frame_entry_info.grid(row=1, column=1, padx=10, pady=10, sticky="NESW")
         self.frame_website_label = customtkinter.CTkLabel(master=self.frame_entry_info, text=f"Add new entry")
-        self.frame_website_label.grid(row=0, column=0, padx=10, pady=10)
+        self.frame_website_label.grid(row=0, column=0, padx=10, pady=10, columnspan=2)
         self.frame_website_label = customtkinter.CTkLabel(master=self.frame_entry_info, text=f"Website:")
         self.frame_website_label.grid(row=1, column=0, padx=10, pady=10)
         self.frame_website_entry = customtkinter.CTkEntry(master=self.frame_entry_info)
@@ -195,13 +201,13 @@ class App(customtkinter.CTk):
         self.frame_username_label = customtkinter.CTkLabel(master=self.frame_entry_info, text="Username:")
         self.frame_username_label.grid(row=2, column=0, padx=10, pady=10)
         self.frame_username_entry = customtkinter.CTkEntry(master=self.frame_entry_info)
-        self.frame_username_entry.grid(row=2, column=1, padx=10, pady=10)
+        self.frame_username_entry.grid(row=2, column=1, padx=10, pady=10, sticky="W")
         self.frame_password_label = customtkinter.CTkLabel(master=self.frame_entry_info, text="Password:")
         self.frame_password_label.grid(row=3, column=0, padx=10, pady=10)
         self.frame_password_entry = customtkinter.CTkEntry(master=self.frame_entry_info)
         self.frame_password_entry.grid(row=3, column=1, padx=10, pady=10)
         self.frame_save = customtkinter.CTkButton(master=self.frame_entry_info, text="Add", command=self.add_new_entry)
-        self.frame_save.grid(row=4, column=0, padx=10, pady=10, sticky="NESW")
+        self.frame_save.grid(row=4, column=0, padx=10, pady=10, sticky="EW", columnspan=2)
 
     def add_new_entry(self):
         # TODO test (sm is wrong...)
