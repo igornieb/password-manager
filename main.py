@@ -9,9 +9,10 @@ from utilis import pswd_gen, search_db, all_entries
 
 # TODO finish tkinker gui,
 #  scrolling,
-#  context menu(?)
+#  context menu(?),
+#  change password
 
-# TODO store salt and pepper (?)
+# TODO (?) store salt and pepper
 
 # TODO db cascade
 # TODO sql injection
@@ -88,8 +89,9 @@ class App(customtkinter.CTk):
         self.registerButton.destroy()
         self.loginErrorLabel.destroy()
         self.loginWindow.columnconfigure(0, weight=2)
+        self.search_frame.columnconfigure(0, weight=1)
         self.registerButton = customtkinter.CTkButton(master=self.loginWindow, command=self.register_action,
-                                                      text="Register").grid(row=6, column=1, sticky="ew")
+                                                      text="Register").grid(row=6, column=0, sticky="ew",columnspan=2)
 
     def register_action(self):
         # logic behind registering in Login/Register window
@@ -122,7 +124,7 @@ class App(customtkinter.CTk):
         if self.db_user.is_authenticated():
             self.deiconify()
             self.title("password-manager")
-            self.geometry(f"{1200}x{600}")
+            #self.geometry(f"{1200}x{600}")
             #make it dynamicly resize
             self.rowconfigure(1,weight=1)
             self.columnconfigure(0,weight=1)
@@ -225,22 +227,23 @@ class App(customtkinter.CTk):
 
         self.frame_entry_info = customtkinter.CTkFrame(master=self, corner_radius=10)
         self.frame_entry_info.grid(row=1, column=1, padx=10, pady=10, sticky="NESW")
+        self.frame_entry_info.columnconfigure(1, weight=1)
         self.frame_website_label = customtkinter.CTkLabel(master=self.frame_entry_info, text=f"Add new entry")
         self.frame_website_label.grid(row=0, column=0, padx=10, pady=10, columnspan=2)
         self.frame_website_label = customtkinter.CTkLabel(master=self.frame_entry_info, text=f"Website:")
         self.frame_website_label.grid(row=1, column=0, padx=10, pady=10)
         self.frame_website_entry = customtkinter.CTkEntry(master=self.frame_entry_info)
-        self.frame_website_entry.grid(row=1, column=1, padx=10, pady=10)
+        self.frame_website_entry.grid(row=1, column=1, padx=10, pady=10, sticky="NESW")
         self.frame_username_label = customtkinter.CTkLabel(master=self.frame_entry_info, text="Username:")
         self.frame_username_label.grid(row=2, column=0, padx=10, pady=10)
         self.frame_username_entry = customtkinter.CTkEntry(master=self.frame_entry_info)
-        self.frame_username_entry.grid(row=2, column=1, padx=10, pady=10, sticky="W")
+        self.frame_username_entry.grid(row=2, column=1, padx=10, pady=10, sticky="NESW")
         self.frame_password_label = customtkinter.CTkLabel(master=self.frame_entry_info, text="Password:")
         self.frame_password_label.grid(row=3, column=0, padx=10, pady=10)
         self.frame_password_entry = customtkinter.CTkEntry(master=self.frame_entry_info)
-        self.frame_password_entry.grid(row=3, column=1, padx=10, pady=10)
+        self.frame_password_entry.grid(row=3, column=1, padx=10, pady=10, sticky="NESW")
         self.frame_save = customtkinter.CTkButton(master=self.frame_entry_info, text="Add", command=self.add_new_entry)
-        self.frame_save.grid(row=4, column=0, padx=10, pady=10, sticky="EW", columnspan=2)
+        self.frame_save.grid(row=4, column=0, padx=10, pady=10, sticky="NESW", columnspan=2)
 
     def add_new_entry(self):
         # logic for adding new entry
@@ -358,10 +361,13 @@ class App(customtkinter.CTk):
         # gui part of showing detailed entry info
         for widget in self.frame_entry_info.winfo_children():
             widget.destroy()
+        self.frame_entry_info.columnconfigure(0,weight=1)
+        self.frame_entry_info.columnconfigure(1, weight=1)
+        self.frame_entry_info.columnconfigure(2, weight=1)
         self.frame_website_label = customtkinter.CTkLabel(master=self.frame_entry_info, text=f"Website:")
-        self.frame_website_label.grid(row=0, column=0, padx=10, pady=10)
+        self.frame_website_label.grid(row=0, column=0, padx=10, pady=10, sticky="NESW")
         self.frame_website_entry = customtkinter.CTkEntry(master=self.frame_entry_info)
-        self.frame_website_entry.grid(row=0, column=1, padx=10, pady=10)
+        self.frame_website_entry.grid(row=0, column=1, padx=10, pady=10, sticky="NESW")
         self.frame_website_entry.insert(0, entry.website)
         copy_image = customtkinter.CTkImage(dark_image=Image.open("assets/copy_d.png"),
                                             light_image=Image.open("assets/copy.png"))
@@ -369,30 +375,30 @@ class App(customtkinter.CTk):
                                                           width=1,
                                                           command=lambda: self.copy_to_clipboard(
                                                               self.frame_website_entry.get()))
-        self.frame_website_copy.grid(row=0, column=2, padx=10, pady=10)
+        self.frame_website_copy.grid(row=0, column=2, padx=10, pady=10, sticky="NESW")
 
         self.frame_username_label = customtkinter.CTkLabel(master=self.frame_entry_info, text="Username:")
-        self.frame_username_label.grid(row=1, column=0, padx=10, pady=10)
+        self.frame_username_label.grid(row=1, column=0, padx=10, pady=10, sticky="NESW")
         self.frame_username_entry = customtkinter.CTkEntry(master=self.frame_entry_info)
-        self.frame_username_entry.grid(row=1, column=1, padx=10, pady=10)
+        self.frame_username_entry.grid(row=1, column=1, padx=10, pady=10, sticky="NESW")
         self.frame_username_entry.insert(0, entry.username)
         self.frame_username_copy = customtkinter.CTkButton(master=self.frame_entry_info, text="", image=copy_image,
                                                            width=1,
                                                            command=lambda: self.copy_to_clipboard(
                                                                self.frame_username_entry.get()))
-        self.frame_username_copy.grid(row=1, column=2, padx=10, pady=10)
+        self.frame_username_copy.grid(row=1, column=2, padx=10, pady=10, sticky="NESW")
 
         self.frame_password_label = customtkinter.CTkLabel(master=self.frame_entry_info, text="Password:")
         self.frame_password_label.grid(row=2, column=0, padx=10, pady=10)
         self.frame_password_entry = customtkinter.CTkEntry(master=self.frame_entry_info)
-        self.frame_password_entry.grid(row=2, column=1, padx=10, pady=10)
+        self.frame_password_entry.grid(row=2, column=1, padx=10, pady=10, sticky="NESW")
         self.frame_password_entry.insert(0, entry.decrypt())
 
         self.frame_password_copy = customtkinter.CTkButton(master=self.frame_entry_info, text="", image=copy_image,
                                                            width=1,
                                                            command=lambda: self.copy_to_clipboard(
                                                                self.frame_password_entry.get()))
-        self.frame_password_copy.grid(row=2, column=2, padx=10, pady=10)
+        self.frame_password_copy.grid(row=2, column=2, padx=10, pady=10, sticky="NESW")
         self.frame_save = customtkinter.CTkButton(master=self.frame_entry_info, text="Save",
                                                   command=lambda: self.update_entry(entry))
         self.frame_save.grid(row=3, column=1, padx=10, pady=10, sticky="NESW")
