@@ -7,14 +7,14 @@ import string
 class Account:
     login_salt = "salt for logging in"
 
-    def __init__(self, username, password):
+    def __init__(self, username="", password=""):
         self.authenticated = False
         self.username = username
         self.salt = ""
         self.hashed_password = hashlib.sha256((password + self.login_salt).encode()).hexdigest()
 
     def is_authenticated(self):
-        if self.authenticated:
+        if self.authenticated==True:
             return True
         return False
 
