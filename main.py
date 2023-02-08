@@ -1,22 +1,13 @@
 import sqlite3
 from tkinter import Image
-from PIL import Image, ImageTk
+from PIL import Image
 from account import Account
 from entry import Entry
 import customtkinter
 import tkinter
 from utilis import pswd_gen, search_db, all_entries
 
-# TODO finish tkinker gui,
-#  scrolling,
-#  context menu(?),
-#  change password
-
-# TODO (?) store salt and pepper
-
-# TODO db cascade,
-#  sql injection,
-#  db.py
+# TODO change password logic
 
 customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("dark-blue")  # Themes: "blue" (standard), "green", "dark-blue"
@@ -25,12 +16,8 @@ customtkinter.set_default_color_theme("dark-blue")  # Themes: "blue" (standard),
 class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
-        # self.withdraw()
-        # self.db_user = Account()
-        # self.mainWindow()
-        # TODO remove before final commit
-        self.db_user = Account("igornieb", "password")
-        self.db_user.login()
+        self.withdraw()
+        self.db_user = Account()
         self.mainWindow()
 
     def loginPrompt(self):
@@ -90,7 +77,6 @@ class App(customtkinter.CTk):
         self.registerButton.destroy()
         self.loginErrorLabel.destroy()
         self.loginWindow.columnconfigure(0, weight=2)
-        self.search_frame.columnconfigure(0, weight=1)
         self.registerButton = customtkinter.CTkButton(master=self.loginWindow, command=self.register_action,
                                                       text="Register").grid(row=6, column=0, sticky="ew",columnspan=2)
 
@@ -339,51 +325,52 @@ class App(customtkinter.CTk):
             widget.destroy()
         # for each entry create own frame
 
-        if len(entries) == 0:
+        if len(entries) < 1:
             self.not_found_label = customtkinter.CTkLabel(master=self.frame_entries, text="Nothing was found")
             self.not_found_label.grid(row=0, column=0, padx=10, pady=10, sticky="nesw")
-        #scrolable frame
+        else:
+            #scrolable frame
 
-        canvas = customtkinter.CTkCanvas(self.frame_entries)
+            canvas = customtkinter.CTkCanvas(self.frame_entries)
 
-        self.frame_entries.columnconfigure(0,weight=1)
-        self.frame_entries.rowconfigure(0, weight=1)
-        #if dark mode is enabled:
-        if customtkinter.get_appearance_mode() == "Dark":
-            canvas.configure(bg="#212121", highlightbackground="#212121")
-        scrollbar = customtkinter.CTkScrollbar(master=self.frame_entries, orientation="vertical", command=canvas.yview)
-        scrollable_frame = customtkinter.CTkFrame(canvas)
-        scrollable_frame.bind(
-            "<Configure>",
-            lambda e: canvas.configure(
-                scrollregion=canvas.bbox("all")
+            self.frame_entries.columnconfigure(0,weight=1)
+            self.frame_entries.rowconfigure(0, weight=1)
+            #if dark mode is enabled:
+            if customtkinter.get_appearance_mode() == "Dark":
+                canvas.configure(bg="#212121", highlightbackground="#212121")
+            scrollbar = customtkinter.CTkScrollbar(master=self.frame_entries, orientation="vertical", command=canvas.yview)
+            scrollable_frame = customtkinter.CTkFrame(canvas)
+            scrollable_frame.bind(
+                "<Configure>",
+                lambda e: canvas.configure(
+                    scrollregion=canvas.bbox("all")
+                )
             )
-        )
-        canvas.grid(row=0, column=0, padx=0, sticky="NESW")
-        scrollbar.grid(row=0, column=1, pady=0,padx=0, sticky="NESW")
-        canvas.configure(yscrollcommand=scrollbar.set)
+            canvas.grid(row=0, column=0, padx=0, sticky="NESW")
+            scrollbar.grid(row=0, column=1, pady=0,padx=0, sticky="NESW")
+            canvas.configure(yscrollcommand=scrollbar.set)
 
-        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-        canvas.columnconfigure(0,weight=1)
-        #
-        i = 0
-        label=customtkinter.CTkLabel(master=scrollable_frame, text="            vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv")
-        label.grid(row=0,column=0, sticky="NW")
-        for entry in entries:
-            frame_entry = customtkinter.CTkFrame(master=scrollable_frame, corner_radius=10)
-            frame_entry.columnconfigure(0,weight=1)
-            frame_entry.grid(row=i, column=0, pady=10, padx=(10,0), sticky="WE")
+            canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+            canvas.columnconfigure(0,weight=1)
+            #
+            i = 0
+            label=customtkinter.CTkLabel(master=scrollable_frame, text="            vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv")
+            label.grid(row=0,column=0, sticky="NW")
+            for entry in entries:
+                frame_entry = customtkinter.CTkFrame(master=scrollable_frame, corner_radius=10)
+                frame_entry.columnconfigure(0,weight=1)
+                frame_entry.grid(row=i, column=0, pady=10, padx=(10,0), sticky="WE")
 
-            entry_webiste_label = customtkinter.CTkLabel(master=frame_entry, text=f"{entry.website[0:35]}")
-            entry_webiste_label.grid(row=0, column=0, padx=10, sticky="NW")
-            entry_username_label = customtkinter.CTkLabel(master=frame_entry, text=f"{entry.username[0:35]}")
-            entry_username_label.grid(row=1, column=0, padx=(20, 10), sticky="NW")
-            entry_edit_image = customtkinter.CTkImage(dark_image=Image.open("assets/edit_d.png"),
-                                                      light_image=Image.open("assets/edit.png"))
-            entry_edit_button = customtkinter.CTkButton(master=frame_entry, text="", image=entry_edit_image, width=1,
-                                                        command=lambda entry=entry: self.show_entry_info(entry))
-            entry_edit_button.grid(row=1, column=2, padx=10, pady=10, sticky="W")
-            i += 1
+                entry_webiste_label = customtkinter.CTkLabel(master=frame_entry, text=f"{entry.website[0:35]}")
+                entry_webiste_label.grid(row=0, column=0, padx=10, sticky="NW")
+                entry_username_label = customtkinter.CTkLabel(master=frame_entry, text=f"{entry.username[0:35]}")
+                entry_username_label.grid(row=1, column=0, padx=(20, 10), sticky="NW")
+                entry_edit_image = customtkinter.CTkImage(dark_image=Image.open("assets/edit_d.png"),
+                                                          light_image=Image.open("assets/edit.png"))
+                entry_edit_button = customtkinter.CTkButton(master=frame_entry, text="", image=entry_edit_image, width=1,
+                                                            command=lambda entry=entry: self.show_entry_info(entry))
+                entry_edit_button.grid(row=1, column=2, padx=10, pady=10, sticky="W")
+                i += 1
 
     def show_entry_info(self, entry: Entry):
         # gui part of showing detailed entry info
@@ -486,14 +473,7 @@ class App(customtkinter.CTk):
         self.loginPrompt()
 
 
-def test():
-    app = App()
-    app.mainloop()
-    # user = Account("igornieb", "password")
-    # #user.register()
-    # user.login()
-    # e = Entry(user,"igorn","www.polska.pl", "skomplikowane hslo")
-    # print(search_db(user, "igor"))
+
 
 
 if __name__ == "__main__":
@@ -506,6 +486,9 @@ if __name__ == "__main__":
             '''CREATE TABLE entries (id INTEGER PRIMARY KEY AUTOINCREMENT, owner TEXT, username TEXT, website TEXT, password TEXT, FOREIGN KEY(owner) REFERENCES accounts(username))''')
         db_conn.commit()
         db_conn.close()
-        test()
+
+        app = App()
+        app.mainloop()
     except:
-        test()
+        app = App()
+        app.mainloop()
