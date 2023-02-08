@@ -14,8 +14,9 @@ from utilis import pswd_gen, search_db, all_entries
 
 # TODO (?) store salt and pepper
 
-# TODO db cascade
-# TODO sql injection
+# TODO db cascade,
+#  sql injection,
+#  db.py
 
 customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("dark-blue")  # Themes: "blue" (standard), "green", "dark-blue"
@@ -219,7 +220,7 @@ class App(customtkinter.CTk):
                                             light_image=Image.open("assets/copy.png"))
         copy_button = customtkinter.CTkButton(master=frame, text="", image=copy_image, width=1,
                                               command=lambda: self.copy_to_clipboard(self.gen_password.get()))
-        copy_button.grid(row=1, column=2)
+        copy_button.grid(row=1, column=2, padx=(0,10))
 
     def add_entry_frame(self):
         for widget in self.frame_entry_info.winfo_children():
@@ -337,14 +338,35 @@ class App(customtkinter.CTk):
         for widget in self.frame_entries.winfo_children():
             widget.destroy()
         # for each entry create own frame
+
         i = 0
         if len(entries) == 0:
             self.not_found_label = customtkinter.CTkLabel(master=self.frame_entries, text="Nothing was found")
             self.not_found_label.grid(row=0, column=0, padx=10, pady=10, sticky="nesw")
+        #scrolable frame init
 
+        canvas = customtkinter.CTkCanvas(self.frame_entries)
+        self.frame_entries.columnconfigure(0,weight=1)
+        self.frame_entries.rowconfigure(0, weight=1)
+        #if dark mode is enabled:
+        if customtkinter.get_appearance_mode() == "Dark":
+            canvas.configure(bg="#212121", highlightbackground="#212121")
+        scrollbar = customtkinter.CTkScrollbar(self.frame_entries, orientation="vertical", command=canvas.yview)
+        scrollable_frame = customtkinter.CTkFrame(canvas)
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(
+                scrollregion=canvas.bbox("all")
+            )
+        )
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        #
         for entry in entries:
-            frame_entry = customtkinter.CTkFrame(master=self.frame_entries, corner_radius=10)
-            frame_entry.grid(row=i, column=0, padx=10, pady=10, sticky="news")
+            frame_entry = customtkinter.CTkFrame(master=scrollable_frame, corner_radius=10)
+
+            frame_entry.grid(row=i, column=0, pady=10, padx=(10,0), sticky="WE")
             frame_entry.columnconfigure(1, weight=1)
             entry_webiste_label = customtkinter.CTkLabel(master=frame_entry, text=f"{entry.website[0:25]}")
             entry_webiste_label.grid(row=0, column=0, padx=10, sticky="nesw")
@@ -356,6 +378,11 @@ class App(customtkinter.CTk):
                                                         command=lambda entry=entry: self.show_entry_info(entry))
             entry_edit_button.grid(row=1, column=2, padx=10, pady=10, sticky="W")
             i += 1
+
+        canvas.grid(row=0, column=0, padx=0, sticky="nesw")
+        canvas.rowconfigure(0, weight=1)
+        canvas.columnconfigure(0, weight=1)
+        scrollbar.grid(row=0, column=1, pady=0,padx=0, sticky="nesw")
 
     def show_entry_info(self, entry: Entry):
         # gui part of showing detailed entry info
