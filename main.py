@@ -339,19 +339,19 @@ class App(customtkinter.CTk):
             widget.destroy()
         # for each entry create own frame
 
-        i = 0
         if len(entries) == 0:
             self.not_found_label = customtkinter.CTkLabel(master=self.frame_entries, text="Nothing was found")
             self.not_found_label.grid(row=0, column=0, padx=10, pady=10, sticky="nesw")
-        #scrolable frame init
+        #scrolable frame
 
         canvas = customtkinter.CTkCanvas(self.frame_entries)
+
         self.frame_entries.columnconfigure(0,weight=1)
         self.frame_entries.rowconfigure(0, weight=1)
         #if dark mode is enabled:
         if customtkinter.get_appearance_mode() == "Dark":
             canvas.configure(bg="#212121", highlightbackground="#212121")
-        scrollbar = customtkinter.CTkScrollbar(self.frame_entries, orientation="vertical", command=canvas.yview)
+        scrollbar = customtkinter.CTkScrollbar(master=self.frame_entries, orientation="vertical", command=canvas.yview)
         scrollable_frame = customtkinter.CTkFrame(canvas)
         scrollable_frame.bind(
             "<Configure>",
@@ -359,30 +359,31 @@ class App(customtkinter.CTk):
                 scrollregion=canvas.bbox("all")
             )
         )
+        canvas.grid(row=0, column=0, padx=0, sticky="NESW")
+        scrollbar.grid(row=0, column=1, pady=0,padx=0, sticky="NESW")
         canvas.configure(yscrollcommand=scrollbar.set)
 
         canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.columnconfigure(0,weight=1)
         #
+        i = 0
+        label=customtkinter.CTkLabel(master=scrollable_frame, text="            vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv")
+        label.grid(row=0,column=0, sticky="NW")
         for entry in entries:
             frame_entry = customtkinter.CTkFrame(master=scrollable_frame, corner_radius=10)
-
+            frame_entry.columnconfigure(0,weight=1)
             frame_entry.grid(row=i, column=0, pady=10, padx=(10,0), sticky="WE")
-            frame_entry.columnconfigure(1, weight=1)
-            entry_webiste_label = customtkinter.CTkLabel(master=frame_entry, text=f"{entry.website[0:25]}")
-            entry_webiste_label.grid(row=0, column=0, padx=10, sticky="nesw")
-            entry_username_label = customtkinter.CTkLabel(master=frame_entry, text=f"{entry.username[0:20]}")
-            entry_username_label.grid(row=1, column=0, padx=(20, 10), sticky="EW")
+
+            entry_webiste_label = customtkinter.CTkLabel(master=frame_entry, text=f"{entry.website[0:35]}")
+            entry_webiste_label.grid(row=0, column=0, padx=10, sticky="NW")
+            entry_username_label = customtkinter.CTkLabel(master=frame_entry, text=f"{entry.username[0:35]}")
+            entry_username_label.grid(row=1, column=0, padx=(20, 10), sticky="NW")
             entry_edit_image = customtkinter.CTkImage(dark_image=Image.open("assets/edit_d.png"),
                                                       light_image=Image.open("assets/edit.png"))
             entry_edit_button = customtkinter.CTkButton(master=frame_entry, text="", image=entry_edit_image, width=1,
                                                         command=lambda entry=entry: self.show_entry_info(entry))
             entry_edit_button.grid(row=1, column=2, padx=10, pady=10, sticky="W")
             i += 1
-
-        canvas.grid(row=0, column=0, padx=0, sticky="nesw")
-        canvas.rowconfigure(0, weight=1)
-        canvas.columnconfigure(0, weight=1)
-        scrollbar.grid(row=0, column=1, pady=0,padx=0, sticky="nesw")
 
     def show_entry_info(self, entry: Entry):
         # gui part of showing detailed entry info
