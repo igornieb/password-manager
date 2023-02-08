@@ -481,7 +481,7 @@ if __name__ == "__main__":
         c.execute(
             '''CREATE TABLE accounts (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, salt TEXT, password TEXT)''')
         c.execute(
-            '''CREATE TABLE entries (id INTEGER PRIMARY KEY AUTOINCREMENT, owner TEXT, username TEXT, website TEXT, password TEXT, FOREIGN KEY(owner) REFERENCES accounts(username))''')
+            '''CREATE TABLE entries (id INTEGER PRIMARY KEY AUTOINCREMENT, owner TEXT, username TEXT, website TEXT, salt TEXT, password TEXT, FOREIGN KEY(owner) REFERENCES accounts(username))''')
         db_conn.commit()
         db_conn.close()
 
