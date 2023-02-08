@@ -1,5 +1,4 @@
 import sqlite3
-from tkinter import Image
 from PIL import Image
 from account import Account
 from entry import Entry

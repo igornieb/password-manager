@@ -1,7 +1,6 @@
 import secrets
 import sqlite3
 import string
-
 from account import Account
 from pbkdf2 import PBKDF2
 from Crypto.Cipher import AES
