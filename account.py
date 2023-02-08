@@ -56,7 +56,7 @@ class Account:
             except:
                 return "err"
 
-    def get_salt_for_username(self: str):
+    def get_salt_for_username(self):
         try:
             db_conn = sqlite3.connect('password-manager.sqlite')
             c = db_conn.cursor()
