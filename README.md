@@ -8,4 +8,4 @@ App supports both dark and light themes.
 Current version doesn't support changing master password and exporting database to file.
 
 ## Security
-Master password is encrypted with pepper in source code, all other passwords are encrypted with pepper and salt located in db.
+Master password is encrypted with salt specific to each user, all other passwords of given user are encrypted with salt used for master password and second salt generated for each entry.
