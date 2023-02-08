@@ -5,13 +5,11 @@ import string
 
 
 class Account:
-    login_salt = "salt for logging in"
-
     def __init__(self, username="", password=""):
         self.authenticated = False
         self.username = username
-        self.salt = ""
-        self.hashed_password = hashlib.sha256((password + self.login_salt).encode()).hexdigest()
+        self.salt = self.get_salt_for_username()
+        self.hashed_password = hashlib.sha256((password + self.salt).encode()).hexdigest()
 
     def is_authenticated(self):
         if self.authenticated==True:
@@ -24,13 +22,11 @@ class Account:
             c = db_conn.cursor()
             db_password = c.execute(f"SELECT password FROM `accounts` WHERE username='{self.username}'")
             db_password = db_password.fetchone()[0]
+            db_conn.close()
             if db_password == self.hashed_password:
-                self.salt = c.execute(f"SELECT salt FROM `accounts` WHERE username='{self.username}'").fetchone()[0]
                 self.authenticated = True
-                db_conn.close()
                 return True
             else:
-                db_conn.close()
                 return False
         except:
             return False
@@ -39,8 +35,6 @@ class Account:
         try:
             db_conn = sqlite3.connect('password-manager.sqlite')
             c = db_conn.cursor()
-            alphabet = string.ascii_letters + string.digits
-            self.salt = ''.join(secrets.choice(alphabet) for i in range(100))
             c.execute(
                 f'''INSERT INTO `accounts`('username','salt','password') VALUES ("{self.username}", "{self.salt}", "{self.hashed_password}")''')
             db_conn.commit()
@@ -49,7 +43,7 @@ class Account:
         except:
             return False
 
-    # TODO change_password, delete_account
+    # TODO change_password
 
     def delete(self):
         if self.is_authenticated():
@@ -61,6 +55,18 @@ class Account:
                 db_conn.close()
             except:
                 return "err"
+
+    def get_salt_for_username(self: str):
+        try:
+            db_conn = sqlite3.connect('password-manager.sqlite')
+            c = db_conn.cursor()
+            db_query = c.execute(f'''SELECT salt FROM accounts WHERE username="{self.username}"''')
+            salt = db_query.fetchone()[0]
+            db_conn.close()
+            return salt
+        except:
+            alphabet = string.ascii_letters + string.digits
+            return ''.join(secrets.choice(alphabet) for i in range(100))
 
     def __str__(self):
         return self.username

@@ -4,16 +4,18 @@ import sqlite3
 from account import Account
 from entry import Entry
 
+
 def pswd_gen(length: int):
     letters = string.ascii_letters
     digits = string.digits
     special_chars = string.punctuation
-    alphabet = letters+digits+special_chars
+    alphabet = letters + digits + special_chars
     pwd = ''
     for i in range(length):
         pwd += ''.join(secrets.choice(alphabet))
 
     return pwd
+
 
 def search_db(user: Account, query: str):
     results = []
@@ -40,5 +42,6 @@ def all_entries(user: Account):
         db_conn.close()
     return results
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     print(pswd_gen(20))

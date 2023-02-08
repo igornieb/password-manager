@@ -7,7 +7,7 @@ import customtkinter
 import tkinter
 from utilis import pswd_gen, search_db, all_entries
 
-# TODO change password logic
+# TODO change password logic, export to file
 
 customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("dark-blue")  # Themes: "blue" (standard), "green", "dark-blue"
@@ -22,7 +22,6 @@ class App(customtkinter.CTk):
 
     def loginPrompt(self):
         # GUI part of Login/Register window
-        # TODO hide password input but not value
         self.loginWindow = customtkinter.CTkToplevel()
         self.loginWindow.protocol("WM_DELETE_WINDOW", self.on_closing)
         # self.loginWindow.geometry(f"{500}x{500}")
@@ -89,7 +88,6 @@ class App(customtkinter.CTk):
                     self.loginWindow.destroy()
                     self.loginPrompt()
                 else:
-                    self.loginErrorLabel.destroy()
                     self.loginErrorLabel = customtkinter.CTkLabel(master=self.loginWindow,
                                                                   text="Username is already in use",
                                                                   text_color="red")
@@ -308,7 +306,7 @@ class App(customtkinter.CTk):
         self.update()
 
     def export_entries_to_file(self):
-        # TODO export to csv/json
+        # TODO export password
         # show dialog for selecting location, save to that location
         pass
 
